@@ -8,26 +8,24 @@ import ChartChart from "./ChartChart.jsx";
 import PopupChart from "./PopupChart.jsx";
 
 function App() {
-const[isPopupOpen, setIsPopupOpen] = useState(false);
-function handleClick() {
-    setIsPopupOpen(true);
-}
-  return (
-    <>
-        <div className="h-full flex">
-            <SideBar />
+    const[isPopupOpen, setIsPopupOpen] = useState(false);
 
-            <main className="flex-1 relative">
-                <AddChart HandleClick={handleClick} />
+      return (
+        <>
+            <div className="h-full flex">
+                <SideBar />
 
-                <ChartChart />
-            </main>
-        </div>
+                <main className="flex-1 relative">
+                    <AddChart changePopupState={setIsPopupOpen} />
 
-        {isPopupOpen && <PopupChart /> }
+                    <ChartChart />
+                </main>
+            </div>
 
-    </>
-  )
+            {isPopupOpen && <PopupChart changePopupState={setIsPopupOpen} />}
+
+        </>
+      )
 }
 
 export default App

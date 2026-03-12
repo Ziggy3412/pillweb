@@ -1,6 +1,10 @@
 
 
-function PopupChart() {
+function PopupChart({ changePopupState }) {
+
+    function handleCloseButton() {
+        changePopupState(false);
+    }
 
     return (
         <div
@@ -14,6 +18,7 @@ function PopupChart() {
                     id="close-add-modal"
                     className="rounded px-2 py-1 text-sm border border-slate-200 hover:bg-slate-50"
                     type="button"
+                    onClick={handleCloseButton}
                 >
                     ✕
                 </button>
