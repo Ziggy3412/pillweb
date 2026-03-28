@@ -5,7 +5,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google'
 import App from './App.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
-import { GOOGLE_CLIENT_ID } from './config.js'
+import { BASE_PATH, GOOGLE_CLIENT_ID } from './config.js'
 
 const root = createRoot(document.getElementById('root'))
 
@@ -40,7 +40,7 @@ if (!GOOGLE_CLIENT_ID) {
     <StrictMode>
       <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
         <AuthProvider>
-          <BrowserRouter>
+          <BrowserRouter basename={BASE_PATH || undefined}>
             <Routes>
               <Route path="/login" element={<LoginPage />} />
               <Route path="/*" element={<App />} />
