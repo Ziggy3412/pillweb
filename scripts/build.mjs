@@ -1,6 +1,6 @@
 import * as esbuild from 'esbuild'
 import { execSync } from 'child_process'
-import { mkdirSync, copyFileSync } from 'fs'
+import { mkdirSync, copyFileSync, writeFileSync } from 'fs'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
 import { getEnvDefine } from './env-define.mjs'
@@ -28,4 +28,6 @@ await esbuild.build({
 })
 
 copyFileSync(join(root, 'index.html'), join(root, 'dist/index.html'))
+copyFileSync(join(root, 'dist/index.html'), join(root, 'dist/404.html'))
 copyFileSync(join(root, 'public/vite.svg'), join(root, 'dist/vite.svg'))
+writeFileSync(join(root, 'dist/.nojekyll'), '')
