@@ -37,7 +37,7 @@ function publicBasePath() {
   return raw.replace(/\/+$/, '')
 }
 
-/** Injected into the browser bundle. Use `.env` or export VITE_* before dev/build. */
+/** Injected into the browser bundle. Local: `.env`. CI: see `.env.example` + deploy workflow. */
 export function getEnvDefine() {
   loadDotEnv()
   return {

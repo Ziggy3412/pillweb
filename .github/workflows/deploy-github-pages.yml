@@ -26,11 +26,21 @@ jobs:
           node-version: '20'
           cache: npm
       - run: npm ci
-      - name: Build
+      # Same keys as local `.env` / `.env.example` so `scripts/env-define.mjs` picks them up.
+      # GitHub: Settings → Secrets and variables → Actions
+      #   Secrets: VITE_GOOGLE_CLIENT_ID (or GOOGLE_CLIENT_ID — see below)
+      #   Variables or secrets: VITE_API_URL (production API base URL)
+      - name: Prepare .env for CI build
+        run: |
+          : > .env
+          printf 'PUBLIC_BASE_PATH=%s\n' "$PUBLIC_BASE_PATH" >> .env
+          printf 'VITE_GOOGLE_CLIENT_ID=%s\n' "$VITE_GOOGLE_CLIENT_ID" >> .env
+          printf 'VITE_API_URL=%s\n' "$VITE_API_URL" >> .env
         env:
           PUBLIC_BASE_PATH: /pillweb
-          VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID || secrets.GOOGLE_CLIENT_ID }}
+          VITE_API_URL: ${{ vars.VITE_API_URL || secrets.VITE_API_URL }}
+      - name: Build
         run: npm run build
       - name: Push dist to gh-pages
         uses: JamesIves/github-pages-deploy-action@v4
