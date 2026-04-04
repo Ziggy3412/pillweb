@@ -200,8 +200,28 @@ function TimePickers({ pillTimeEntries, setPillTimeEntries, timeValues, setTimeV
     );
 }
 
-function PopupChart({ changePopupState, onSave }) {
-    const [urgency, setUrgency] = useState(0);
+function initTimeState(pill) {
+    const times = pill?.schedule?.times ?? [];
+    const tv = {};
+    const av = {};
+    times.forEach((t, i) => {
+        const [timePart, ampm] = t.split(' ');
+        const [h, m] = (timePart ?? '').split(':');
+        tv[`time-hour-${i}`] = h ?? '';
+        tv[`time-min-${i}`] = m ?? '';
+        av[i] = ampm ?? 'AM';
+    });
+    return { tv, av, count: Math.max(0, times.length - 1) };
+}
+
+function PopupChart({ changePopupState, onSave, editPill, onUpdate }) {
+    // Controlled text fields — pre-filled when editing
+    const [name, setName] = useState(editPill?.name ?? '');
+    const [medication, setMedication] = useState(editPill?.medication ?? '');
+    const [dosage, setDosage] = useState(editPill?.dosage ?? '');
+    const [notes, setNotes] = useState(editPill?.notes ?? '');
+
+    const [urgency, setUrgency] = useState(editPill?.urgency ?? 0);
     const [urgencyError, setUrgencyError] = useState('');
     const [dosageError, setDosageError] = useState('');
     const [frequencyError, setFrequencyError] = useState('');
@@ -211,15 +231,16 @@ function PopupChart({ changePopupState, onSave }) {
     const [saving, setSaving] = useState(false);
     const [saveError, setSaveError] = useState('');
 
-    // Frequency
-    const [frequency, setFrequency] = useState('');
-    const [intervalValue, setIntervalValue] = useState('');
-    const [selectedDays, setSelectedDays] = useState([]);
+    // Frequency — pre-filled when editing
+    const [frequency, setFrequency] = useState(editPill?.schedule?.frequency ?? '');
+    const [intervalValue, setIntervalValue] = useState(String(editPill?.schedule?.interval ?? ''));
+    const [selectedDays, setSelectedDays] = useState(editPill?.schedule?.days ?? []);
 
-    // Time pickers
-    const [pillTimeEntries, setPillTimeEntries] = useState(0);
-    const [timeValues, setTimeValues] = useState({});
-    const [amPmValues, setAmPmValues] = useState({});
+    // Time pickers — pre-filled when editing
+    const { tv: initTv, av: initAv, count: initCount } = initTimeState(editPill);
+    const [pillTimeEntries, setPillTimeEntries] = useState(initCount);
+    const [timeValues, setTimeValues] = useState(initTv);
+    const [amPmValues, setAmPmValues] = useState(initAv);
 
     const needsTimes = frequency && frequency !== 'as_needed';
 
@@ -255,14 +276,10 @@ function PopupChart({ changePopupState, onSave }) {
         setIntervalError('');
         setSaveError('');
 
-        const form = e.target;
-        const name = form.querySelector('#person-name')?.value?.trim();
-        const medication = form.querySelector('#med-name')?.value?.trim();
-        const dosage = form.elements['dosage']?.value?.trim();
-        const notes = form.querySelector('#notes')?.value?.trim();
+        const trimmedDosage = dosage.trim();
 
         if (urgency === 0) { setUrgencyError('Please choose an urgency (1–5 stars) before saving.'); return; }
-        if (!dosage) { setDosageError('Dosage is required.'); return; }
+        if (!trimmedDosage) { setDosageError('Dosage is required.'); return; }
         if (!frequency) { setFrequencyError('Please select how often to take this medication.'); return; }
 
         if (frequency === 'specific_days' && selectedDays.length === 0) {
@@ -286,10 +303,17 @@ function PopupChart({ changePopupState, onSave }) {
         if (frequency === 'every_x_months') schedule.interval = Number(intervalValue);
         if (needsTimes) schedule.times = times;
 
+        const payload = { name: name.trim(), medication: medication.trim(), dosage: trimmedDosage, urgency, schedule, notes: notes.trim() };
+
         setSaving(true);
         try {
-            const newPill = await api.post('/api/pills', { name, medication, dosage, urgency, schedule, notes });
-            onSave?.(newPill);
+            if (editPill) {
+                const updated = await api.put(`/api/pills/${editPill.id}`, payload);
+                onUpdate?.(updated);
+            } else {
+                const newPill = await api.post('/api/pills', payload);
+                onSave?.(newPill);
+            }
             changePopupState(false);
         } catch {
             setSaveError('Failed to save. Please try again.');
@@ -302,7 +326,7 @@ function PopupChart({ changePopupState, onSave }) {
         <div id="add-modal" className="fixed inset-0 z-50 bg-black/30 flex items-center justify-center p-4">
             <div className="flex max-h-[90vh] w-full max-w-2xl flex-col rounded-xl bg-white border border-slate-200 shadow-lg">
                 <div className="flex shrink-0 items-center justify-between border-b border-slate-200 p-4">
-                    <h2 className="text-sm font-semibold text-primary-dark" id="modal-title">Add</h2>
+                    <h2 className="text-sm font-semibold text-primary-dark" id="modal-title">{editPill ? 'Edit' : 'Add'}</h2>
                     <button
                         id="close-add-modal"
                         className="rounded px-2 py-1 text-sm border border-slate-200 hover:bg-slate-50"
@@ -319,21 +343,21 @@ function PopupChart({ changePopupState, onSave }) {
                         {/* Name */}
                         <div>
                             <label className="block text-[11px] font-medium text-slate-700">Name</label>
-                            <input id="person-name" type="text" required
+                            <input type="text" required value={name} onChange={(e) => setName(e.target.value)}
                                 className="mt-1 block w-full rounded border border-slate-300 bg-white px-2.5 py-1.5 text-xs focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
                         </div>
 
                         {/* Medication */}
                         <div>
                             <label className="block text-[11px] font-medium text-slate-700">Medication</label>
-                            <input id="med-name" type="text" required
+                            <input type="text" required value={medication} onChange={(e) => setMedication(e.target.value)}
                                 className="mt-1 block w-full rounded border border-slate-300 bg-white px-2.5 py-1.5 text-xs focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
                         </div>
 
                         {/* Dosage */}
                         <div>
                             <label className="block text-[11px] font-medium text-slate-700">Dosage</label>
-                            <input id="dosage" name="dosage" type="text" required
+                            <input type="text" required value={dosage} onChange={(e) => setDosage(e.target.value)}
                                 className="mt-1 block w-full rounded border border-slate-300 bg-white px-2.5 py-1.5 text-xs focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
                             {dosageError && <p className="mt-1 text-[11px] text-red-600" role="alert">{dosageError}</p>}
                         </div>
@@ -445,7 +469,7 @@ function PopupChart({ changePopupState, onSave }) {
                         {/* Notes */}
                         <div className="md:col-span-2">
                             <label className="block text-[11px] font-medium text-slate-700">Notes</label>
-                            <textarea id="notes" rows="4"
+                            <textarea rows="4" value={notes} onChange={(e) => setNotes(e.target.value)}
                                 className="mt-1 block w-full rounded border border-slate-300 bg-white px-2.5 py-1.5 text-xs focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                             />
                         </div>

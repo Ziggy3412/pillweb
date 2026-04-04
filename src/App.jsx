@@ -10,8 +10,9 @@ import { usePills } from './hooks/usePills.js'
 
 export default function App() {
   const { user, login } = useAuth()
-  const { pills, addPill, deletePill, refresh } = usePills()
+  const { pills, addPill, deletePill, updatePill, refresh } = usePills()
   const [isPopupOpen, setIsPopupOpen] = useState(false)
+  const [editingPill, setEditingPill] = useState(null)
   const [authModal, setAuthModal] = useState(null)
   const [currentPage, setCurrentPage] = useState('chart')
 
@@ -20,6 +21,16 @@ export default function App() {
       setAuthModal('login')
       return
     }
+    setEditingPill(null)
+    setIsPopupOpen(true)
+  }
+
+  function handleEditClick(pill) {
+    if (!user) {
+      setAuthModal('login')
+      return
+    }
+    setEditingPill(pill)
     setIsPopupOpen(true)
   }
 
@@ -43,14 +54,19 @@ export default function App() {
           ) : (
             <>
               <AddChart changePopupState={handleAddClick} />
-              <ChartChart pills={pills} onDelete={deletePill} />
+              <ChartChart pills={pills} onDelete={deletePill} onEdit={handleEditClick} />
             </>
           )}
         </main>
       </div>
 
       {isPopupOpen && (
-        <PopupChart changePopupState={setIsPopupOpen} onSave={addPill} />
+        <PopupChart
+          changePopupState={setIsPopupOpen}
+          onSave={addPill}
+          editPill={editingPill}
+          onUpdate={updatePill}
+        />
       )}
 
       {authModal && (

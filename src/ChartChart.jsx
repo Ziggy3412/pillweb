@@ -29,7 +29,18 @@ function TrashIcon() {
     );
 }
 
-function ChartChart({ pills = [], onDelete }) {
+function EditIcon() {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"
+            className="w-3.5 h-3.5">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+        </svg>
+    );
+}
+
+function ChartChart({ pills = [], onDelete, onEdit }) {
     return (
         <div className="p-6 pt-16">
             <div className="rounded-xl border border-slate-200 overflow-hidden">
@@ -74,14 +85,24 @@ function ChartChart({ pills = [], onDelete }) {
                                         </td>
                                         <td className="px-4 py-3 text-xs text-slate-500">{pill.notes}</td>
                                         <td className="px-4 py-3">
-                                            <button
-                                                type="button"
-                                                onClick={() => onDelete?.(pill.id)}
-                                                className="text-slate-400 hover:text-red-500 transition-colors"
-                                                aria-label="Delete"
-                                            >
-                                                <TrashIcon />
-                                            </button>
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => onEdit?.(pill)}
+                                                    className="text-slate-400 hover:text-indigo-500 transition-colors"
+                                                    aria-label="Edit"
+                                                >
+                                                    <EditIcon />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => onDelete?.(pill.id)}
+                                                    className="text-slate-400 hover:text-red-500 transition-colors"
+                                                    aria-label="Delete"
+                                                >
+                                                    <TrashIcon />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}

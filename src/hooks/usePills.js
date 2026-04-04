@@ -51,9 +51,17 @@ export function usePills() {
     })
   }
 
+  function updatePill(updated) {
+    setPills((prev) => {
+      const next = prev.map((p) => (p.id === updated.id ? updated : p))
+      if (user?.id) localStorage.setItem(cacheKey(user.id), JSON.stringify(next))
+      return next
+    })
+  }
+
   const refresh = useCallback(() => {
     if (user?.id) fetchPills(user.id)
   }, [user, fetchPills])
 
-  return { pills, addPill, deletePill, refresh }
+  return { pills, addPill, deletePill, updatePill, refresh }
 }
