@@ -34,8 +34,6 @@ const ctx = await esbuild.context({
   define: getEnvDefine(),
 })
 
-await ctx.watch()
-
 const shutdown = () => {
   tw.kill('SIGTERM')
   ctx.dispose().catch(() => {})
@@ -44,8 +42,10 @@ const shutdown = () => {
 process.on('SIGINT', shutdown)
 process.on('SIGTERM', shutdown)
 
-await ctx.serve({
+const { host, port } = await ctx.serve({
   servedir: join(root, 'dist'),
-  port: 10914,
-  host: '0.0.0.0',
+  port: 5173,
+  host: 'localhost',
 })
+
+console.log(`\n  Dev server running at http://${host}:${port}\n`)
