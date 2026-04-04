@@ -42,7 +42,7 @@ export function getEnvDefine() {
   loadDotEnv()
   return {
     __GOOGLE_CLIENT_ID__: JSON.stringify(process.env.VITE_GOOGLE_CLIENT_ID || ''),
-    __API_URL__: JSON.stringify(process.env.VITE_API_URL || 'http://localhost:3000'),
+    __API_URL__: JSON.stringify(process.env.VITE_API_URL || 'https://pillback-production.up.railway.app'),
     __BASE_PATH__: JSON.stringify(publicBasePath()),
   }
 }

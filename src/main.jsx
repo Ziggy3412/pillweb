@@ -24,7 +24,7 @@ function MissingClientId() {
           Add (use your real Web client ID from Google Cloud Console):
           <pre className="mt-2 overflow-x-auto rounded-lg bg-slate-900 p-3 text-slate-100">
             {`VITE_GOOGLE_CLIENT_ID=xxxx.apps.googleusercontent.com
-VITE_API_URL=http://localhost:3000`}
+VITE_API_URL=https://pillback-production.up.railway.app`}
           </pre>
         </li>
         <li>Stop the dev server (Ctrl+C) and run <code className="rounded bg-slate-200 px-1">npm run dev</code> again.</li>

@@ -1,5 +1,5 @@
 import { createContext, useContext, useState } from 'react'
-import { API_URL } from '../config.js'
+import { API_BASE_URL as API_URL } from '../api.js'
 
 const AuthContext = createContext(null)
 
