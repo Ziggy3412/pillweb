@@ -12,7 +12,12 @@
     --color-red-400: oklch(70.4% 0.191 22.216);
     --color-red-500: oklch(63.7% 0.237 25.331);
     --color-red-600: oklch(57.7% 0.245 27.325);
+    --color-amber-50: oklch(98.7% 0.022 95.277);
+    --color-amber-200: oklch(92.4% 0.12 95.746);
     --color-amber-500: oklch(76.9% 0.188 70.08);
+    --color-amber-600: oklch(66.6% 0.179 58.318);
+    --color-amber-700: oklch(55.5% 0.163 48.998);
+    --color-amber-800: oklch(47.3% 0.137 46.201);
     --color-green-50: oklch(98.2% 0.018 155.826);
     --color-green-100: oklch(96.2% 0.044 156.743);
     --color-green-200: oklch(92.5% 0.084 155.995);
@@ -360,6 +365,9 @@
   .ml-1 {
     margin-left: calc(var(--spacing) * 1);
   }
+  .ml-2 {
+    margin-left: calc(var(--spacing) * 2);
+  }
   .block {
     display: block;
   }
@@ -689,6 +697,9 @@
     border-left-style: var(--tw-border-style);
     border-left-width: 4px;
   }
+  .border-amber-200 {
+    border-color: var(--color-amber-200);
+  }
   .border-green-200 {
     border-color: var(--color-green-200);
   }
@@ -736,6 +747,12 @@
   }
   .bg-\[\#eef2fb\] {
     background-color: #eef2fb;
+  }
+  .bg-amber-50 {
+    background-color: var(--color-amber-50);
+  }
+  .bg-amber-600 {
+    background-color: var(--color-amber-600);
   }
   .bg-black\/30 {
     background-color: color-mix(in srgb, #000 30%, transparent);
@@ -1038,11 +1055,17 @@
     --tw-tracking: var(--tracking-widest);
     letter-spacing: var(--tracking-widest);
   }
+  .whitespace-nowrap {
+    white-space: nowrap;
+  }
   .text-\[\#2d3a5e\] {
     color: #2d3a5e;
   }
   .text-amber-500 {
     color: var(--color-amber-500);
+  }
+  .text-amber-800 {
+    color: var(--color-amber-800);
   }
   .text-blue-600 {
     color: var(--color-blue-600);
@@ -1198,6 +1221,13 @@
       }
     }
   }
+  .hover\:bg-amber-700 {
+    &:hover {
+      @media (hover: hover) {
+        background-color: var(--color-amber-700);
+      }
+    }
+  }
   .hover\:bg-primary-dark {
     &:hover {
       @media (hover: hover) {
@@ -1244,6 +1274,13 @@
     &:hover {
       @media (hover: hover) {
         background-color: var(--color-slate-700);
+      }
+    }
+  }
+  .hover\:text-amber-700 {
+    &:hover {
+      @media (hover: hover) {
+        color: var(--color-amber-700);
       }
     }
   }
