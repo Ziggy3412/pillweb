@@ -51,8 +51,9 @@ export default function OnboardingModal({ onFinish }) {
   const [caregivers, setCaregivers] = useState([{ cc: '+1', phone: '' }])
 
   // Step 4 — WhatsApp
-  const [checking,  setChecking]  = useState(false)
-  const [joined,    setJoined]    = useState(null)   // true | false | null
+  const [checking,    setChecking]    = useState(false)
+  // phoneStatuses: null before first check, or [{ phone, label, joined }]
+  const [phoneStatuses, setPhoneStatuses] = useState(null)
 
   // Step 5 — finishing
   const [saving,    setSaving]    = useState(false)
@@ -70,14 +71,33 @@ export default function OnboardingModal({ onFinish }) {
 
   async function checkJoined() {
     setChecking(true)
-    setJoined(null)
+    setPhoneStatuses(null)
     try {
+      // Build a labelled list: patient first, then caregivers
+      const allPhones = [
+        { phone: patientCC + patientPhone, label: `Patient (${patientName || 'patient'})` },
+        ...caregivers
+          .filter(c => c.phone.trim())
+          .map((c, i) => ({ phone: (c.cc || '+1') + c.phone, label: `Caregiver ${i + 1}` })),
+      ].filter(p => p.phone.length > 3)
+
       const res = await api.post('/api/whatsapp/check', {
-        phones: caregivers.map(c => (c.cc || '+1') + c.phone).filter(p => p.length > 3),
+        phones: allPhones.map(p => p.phone),
       })
-      setJoined(res.joined === true)
+
+      // Backend returns { results: [{ phone, joined }] }
+      const resultMap = Object.fromEntries((res.results || []).map(r => [r.phone, r.joined]))
+      setPhoneStatuses(allPhones.map(p => ({
+        ...p,
+        joined: resultMap[p.phone] ?? false,
+      })))
     } catch {
-      setJoined(false)
+      // On error mark everything as unknown
+      const allPhones = [
+        { phone: patientCC + patientPhone, label: `Patient (${patientName || 'patient'})` },
+        ...caregivers.filter(c => c.phone.trim()).map((c, i) => ({ phone: (c.cc || '+1') + c.phone, label: `Caregiver ${i + 1}` })),
+      ].filter(p => p.phone.length > 3)
+      setPhoneStatuses(allPhones.map(p => ({ ...p, joined: false })))
     } finally {
       setChecking(false)
     }
@@ -242,21 +262,28 @@ export default function OnboardingModal({ onFinish }) {
               {checking ? 'Checking…' : 'Check if I\'ve joined'}
             </button>
 
-            {joined === true && (
-              <div className="flex items-center gap-2 rounded-lg bg-green-50 border border-green-200 px-4 py-3 mb-3">
-                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-green-500 shrink-0">
-                  <svg viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3">
-                    <polyline points="10 3 5 9 2 6" />
-                  </svg>
-                </span>
-                <p className="text-sm font-medium text-green-700">All set! You've joined the sandbox.</p>
-              </div>
-            )}
-
-            {joined === false && (
-              <div className="flex items-center gap-2 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 mb-3">
-                <span className="text-amber-500 text-lg shrink-0">⚠</span>
-                <p className="text-sm text-amber-700">Doesn't look like you've joined yet. Follow the steps above, then check again.</p>
+            {phoneStatuses && (
+              <div className="rounded-xl border border-slate-200 overflow-hidden mb-3">
+                {phoneStatuses.map((p) => (
+                  <div key={p.phone} className={`flex items-center gap-3 px-4 py-2.5 border-b last:border-b-0 ${p.joined ? 'bg-green-50 border-green-100' : 'bg-amber-50 border-amber-100'}`}>
+                    {p.joined ? (
+                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-green-500 shrink-0">
+                        <svg viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3">
+                          <polyline points="10 3 5 9 2 6" />
+                        </svg>
+                      </span>
+                    ) : (
+                      <span className="text-amber-500 text-base shrink-0 leading-none">⚠</span>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-xs font-semibold ${p.joined ? 'text-green-700' : 'text-amber-700'}`}>{p.label}</p>
+                      <p className={`text-[11px] font-mono ${p.joined ? 'text-green-600' : 'text-amber-600'}`}>{p.phone}</p>
+                    </div>
+                    <span className={`text-[11px] font-medium shrink-0 ${p.joined ? 'text-green-600' : 'text-amber-600'}`}>
+                      {p.joined ? 'Joined' : 'Not joined'}
+                    </span>
+                  </div>
+                ))}
               </div>
             )}
 
@@ -265,7 +292,7 @@ export default function OnboardingModal({ onFinish }) {
                 className="flex-1 rounded-xl border border-slate-300 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
                 Back
               </button>
-              {joined === true ? (
+              {phoneStatuses && phoneStatuses.every(p => p.joined) ? (
                 <button onClick={next}
                   className="flex-1 rounded-xl bg-primary py-3 text-sm font-semibold text-white hover:bg-primary-dark transition-colors">
                   Next →

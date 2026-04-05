@@ -3,7 +3,7 @@ import { useState } from 'react'
 const FAQS = [
   {
     q: 'How does PillPal work?',
-    a: "You, the caregiver, will set up the medication taker's schedule. Then, we will automatically send reminder SMS messages to the medication taker, who simply replies to the message. You will get a confirmation or an alert depending on if the medication was taken successfully/unsuccessfully.",
+    a: "You, the caregiver, will set up the medication taker's schedule. Then, we will automatically send reminder messages on WhatsApp to the medication taker, who simply replies in the chat. You will get a confirmation or an alert depending on whether the medication was taken successfully or not.",
   },
   {
     q: 'Who is PillPal for?',
@@ -11,19 +11,15 @@ const FAQS = [
   },
   {
     q: "What happens if the medication taker doesn't reply?",
-    a: "If the medication taker doesn't reply to PillPal's text reminder within 30 minutes, the caregiver will receive an alert notifying them that the medicine was not taken successfully.",
-  },
-  {
-    q: 'Why SMS?',
-    a: 'SMS messages are the most reliable and simple method of reminders (in fact, SMS messages have a 98% open rate whereas notifications are much more likely to be ignored).',
+    a: "If the medication taker doesn't reply to PillPal's WhatsApp reminder within 30 minutes, the caregiver will receive an alert notifying them that the medicine was not taken successfully.",
   },
   {
     q: 'Do I need to download anything?',
-    a: 'No, PillPal is entirely web-based! The medication schedule can be set up on our website and our reminders are sent via SMS, meaning that the medication taker doesn\'t need to download or manage an app.',
+    a: 'PillPal is entirely web-based for the caregiver—you set up the schedule on our website. The medication taker only needs WhatsApp (no separate PillPal app to install).',
   },
   {
     q: 'Does the medication taker need an account?',
-    a: 'No, the caregiver can fully set up an account and medication schedule on their behalf. The medication taker simply receives SMS messages as notifications.',
+    a: 'No, the caregiver can fully set up an account and medication schedule on their behalf. The medication taker simply receives reminders on WhatsApp.',
   },
 ]
 
