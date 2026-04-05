@@ -51,9 +51,7 @@ export default function OnboardingModal({ onFinish }) {
   const [caregivers, setCaregivers] = useState([{ cc: '+1', phone: '' }])
 
   // Step 4 — WhatsApp
-  const [checking,    setChecking]    = useState(false)
-  // phoneStatuses: null before first check, or [{ phone, label, joined }]
-  const [phoneStatuses, setPhoneStatuses] = useState(null)
+  const [sandboxConfirmed, setSandboxConfirmed] = useState(false)
 
   // Step 5 — finishing
   const [saving,    setSaving]    = useState(false)
@@ -69,39 +67,6 @@ export default function OnboardingModal({ onFinish }) {
   function addCG()    { setCaregivers(prev => [...prev, { cc: '+1', phone: '' }]) }
   function removeCG(i){ setCaregivers(prev => prev.filter((_, idx) => idx !== i)) }
 
-  async function checkJoined() {
-    setChecking(true)
-    setPhoneStatuses(null)
-    try {
-      // Build a labelled list: patient first, then caregivers
-      const allPhones = [
-        { phone: patientCC + patientPhone, label: `Patient (${patientName || 'patient'})` },
-        ...caregivers
-          .filter(c => c.phone.trim())
-          .map((c, i) => ({ phone: (c.cc || '+1') + c.phone, label: `Caregiver ${i + 1}` })),
-      ].filter(p => p.phone.length > 3)
-
-      const res = await api.post('/api/whatsapp/check', {
-        phones: allPhones.map(p => p.phone),
-      })
-
-      // Backend returns { results: [{ phone, joined }] }
-      const resultMap = Object.fromEntries((res.results || []).map(r => [r.phone, r.joined]))
-      setPhoneStatuses(allPhones.map(p => ({
-        ...p,
-        joined: resultMap[p.phone] ?? false,
-      })))
-    } catch {
-      // On error mark everything as unknown
-      const allPhones = [
-        { phone: patientCC + patientPhone, label: `Patient (${patientName || 'patient'})` },
-        ...caregivers.filter(c => c.phone.trim()).map((c, i) => ({ phone: (c.cc || '+1') + c.phone, label: `Caregiver ${i + 1}` })),
-      ].filter(p => p.phone.length > 3)
-      setPhoneStatuses(allPhones.map(p => ({ ...p, joined: false })))
-    } finally {
-      setChecking(false)
-    }
-  }
 
   async function finish() {
     setSaving(true)
@@ -257,52 +222,28 @@ export default function OnboardingModal({ onFinish }) {
               <p className="text-[11px] text-slate-400">Do this for the patient's phone and every caregiver phone.</p>
             </div>
 
-            <button type="button" onClick={checkJoined} disabled={checking}
-              className="w-full rounded-xl border border-primary py-2.5 text-sm font-semibold text-primary hover:bg-primary/5 disabled:opacity-50 transition-colors mb-3">
-              {checking ? 'Checking…' : 'Check if I\'ve joined'}
-            </button>
-
-            {phoneStatuses && (
-              <div className="rounded-xl border border-slate-200 overflow-hidden mb-3">
-                {phoneStatuses.map((p) => (
-                  <div key={p.phone} className={`flex items-center gap-3 px-4 py-2.5 border-b last:border-b-0 ${p.joined ? 'bg-green-50 border-green-100' : 'bg-amber-50 border-amber-100'}`}>
-                    {p.joined ? (
-                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-green-500 shrink-0">
-                        <svg viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3">
-                          <polyline points="10 3 5 9 2 6" />
-                        </svg>
-                      </span>
-                    ) : (
-                      <span className="text-amber-500 text-base shrink-0 leading-none">⚠</span>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-xs font-semibold ${p.joined ? 'text-green-700' : 'text-amber-700'}`}>{p.label}</p>
-                      <p className={`text-[11px] font-mono ${p.joined ? 'text-green-600' : 'text-amber-600'}`}>{p.phone}</p>
-                    </div>
-                    <span className={`text-[11px] font-medium shrink-0 ${p.joined ? 'text-green-600' : 'text-amber-600'}`}>
-                      {p.joined ? 'Joined' : 'Not joined'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
+            <label className="flex items-start gap-3 cursor-pointer select-none mb-5">
+              <input
+                type="checkbox"
+                checked={sandboxConfirmed}
+                onChange={e => setSandboxConfirmed(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-slate-300 text-primary accent-primary shrink-0"
+              />
+              <span className="text-sm text-slate-700">
+                I confirm I've texted <span className="font-mono font-semibold text-primary-dark">join die-stranger</span> to{' '}
+                <span className="font-mono font-semibold text-primary-dark">+1 415 523 8886</span>
+              </span>
+            </label>
 
             <div className="flex gap-3 mt-2">
               <button onClick={back}
                 className="flex-1 rounded-xl border border-slate-300 py-3 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
                 Back
               </button>
-              {phoneStatuses && phoneStatuses.every(p => p.joined) ? (
-                <button onClick={next}
-                  className="flex-1 rounded-xl bg-primary py-3 text-sm font-semibold text-white hover:bg-primary-dark transition-colors">
-                  Next →
-                </button>
-              ) : (
-                <button onClick={next}
-                  className="flex-1 rounded-xl border border-slate-300 py-3 text-sm font-medium text-slate-500 hover:bg-slate-50 transition-colors">
-                  Skip for now
-                </button>
-              )}
+              <button onClick={next} disabled={!sandboxConfirmed}
+                className="flex-1 rounded-xl bg-primary py-3 text-sm font-semibold text-white hover:bg-primary-dark transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                Next →
+              </button>
             </div>
           </div>
         )}
