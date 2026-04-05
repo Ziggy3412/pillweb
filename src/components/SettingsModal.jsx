@@ -113,6 +113,7 @@ export default function SettingsModal({ onClose }) {
     }))
     setShowConfirm(false)
     setDirty(false)
+    onClose()
   }
 
   return (
