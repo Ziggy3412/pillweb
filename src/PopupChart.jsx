@@ -137,7 +137,7 @@ function TimePickers({ pillTimeEntries, setPillTimeEntries, timeValues, setTimeV
                 <span className="text-[11px] font-medium text-slate-600">Time(s)</span>
                 <button
                     type="button"
-                    className="inline-flex items-center gap-1 rounded border border-primary bg-primary px-2 py-1 text-[11px] text-blue-600 hover:bg-primary-dark"
+                    className="inline-flex items-center gap-1 rounded border border-primary bg-primary px-2 py-1 text-[11px] text-white hover:bg-primary-dark"
                     onClick={() => setPillTimeEntries((n) => n + 1)}
                 >
                     + Add time
@@ -175,7 +175,7 @@ function TimePickers({ pillTimeEntries, setPillTimeEntries, timeValues, setTimeV
                                     onClick={() => setAmPmValues((prev) => ({ ...prev, [i]: period }))}
                                     className={`px-2 py-1.5 font-medium transition-colors ${
                                         (amPmValues[i] ?? 'AM') === period
-                                            ? 'bg-indigo-600 text-white'
+                                            ? 'bg-primary text-white'
                                             : 'bg-white text-slate-600 hover:bg-slate-50'
                                     }`}
                                 >
@@ -214,7 +214,7 @@ function initTimeState(pill) {
     return { tv, av, count: Math.max(0, times.length - 1) };
 }
 
-function PopupChart({ changePopupState, onSave, editPill, onUpdate }) {
+function PopupChart({ changePopupState, onSave, editPill, onUpdate, onToast }) {
     // Controlled text fields — pre-filled when editing
     const [name, setName] = useState(editPill?.name ?? '');
     const [medication, setMedication] = useState(editPill?.medication ?? '');
@@ -228,6 +228,7 @@ function PopupChart({ changePopupState, onSave, editPill, onUpdate }) {
     const [timeError, setTimeError] = useState('');
     const [daysError, setDaysError] = useState('');
     const [intervalError, setIntervalError] = useState('');
+    const [reminderEnabled, setReminderEnabled] = useState(editPill?.reminderEnabled ?? false);
     const [saving, setSaving] = useState(false);
     const [saveError, setSaveError] = useState('');
 
@@ -235,6 +236,9 @@ function PopupChart({ changePopupState, onSave, editPill, onUpdate }) {
     const [frequency, setFrequency] = useState(editPill?.schedule?.frequency ?? '');
     const [intervalValue, setIntervalValue] = useState(String(editPill?.schedule?.interval ?? ''));
     const [selectedDays, setSelectedDays] = useState(editPill?.schedule?.days ?? []);
+    const [startDate, setStartDate] = useState(editPill?.schedule?.startDate ?? new Date().toISOString().split('T')[0]);
+
+    const needsStartDate = frequency === 'every_other_day' || frequency === 'every_x_days' || frequency === 'every_x_months';
 
     // Time pickers — pre-filled when editing
     const { tv: initTv, av: initAv, count: initCount } = initTimeState(editPill);
@@ -245,9 +249,9 @@ function PopupChart({ changePopupState, onSave, editPill, onUpdate }) {
     const needsTimes = frequency && frequency !== 'as_needed';
 
     function getStarColor(starIndex) {
-        if (starIndex <= 2) return '#22c55e';
-        if (starIndex === 3) return '#eab308';
-        return '#ef4444';
+        if (starIndex <= 2) return '#4ade80';
+        if (starIndex === 3) return '#facc15';
+        return '#f87171';
     }
 
     function toggleDay(day) {
@@ -301,22 +305,47 @@ function PopupChart({ changePopupState, onSave, editPill, onUpdate }) {
         if (frequency === 'specific_days') schedule.days = selectedDays;
         if (frequency === 'every_x_days') schedule.interval = Number(intervalValue);
         if (frequency === 'every_x_months') schedule.interval = Number(intervalValue);
+        if (needsStartDate) schedule.startDate = startDate;
         if (needsTimes) schedule.times = times;
 
-        const payload = { name: name.trim(), medication: medication.trim(), dosage: trimmedDosage, urgency, schedule, notes: notes.trim() };
+        const payload = { name: name.trim(), medication: medication.trim(), dosage: trimmedDosage, urgency, schedule, notes: notes.trim(), reminderEnabled };
 
         setSaving(true);
         try {
+            let savedPill;
             if (editPill) {
-                const updated = await api.put(`/api/pills/${editPill.id}`, payload);
-                onUpdate?.(updated);
+                savedPill = await api.put(`/api/pills/${editPill.id}`, payload);
+                onUpdate?.(savedPill);
             } else {
-                const newPill = await api.post('/api/pills', payload);
-                onSave?.(newPill);
+                savedPill = await api.post('/api/pills', payload);
+                onSave?.(savedPill);
             }
+
+            if (reminderEnabled) {
+                try {
+                    const s = JSON.parse(localStorage.getItem('pillpal_settings') || '{}');
+                    const caregiverPhones = (s.caregivers || [{ cc: s.caregiverCC || '+1', phone: s.caregiverPhone || '' }])
+                        .map(c => (c.cc || '+1') + (c.phone || '')).filter(p => p.length > 3);
+                    await api.post('/api/reminders', {
+                        caregiverPhones,
+                        patientName: s.patientName || '',
+                        patientPhone: (s.patientCC || '+1') + (s.patientPhone || ''),
+                        pillId: savedPill.id,
+                        notes: notes.trim(),
+                    });
+                    onToast?.('WhatsApp reminder scheduled — a message will be sent to the patient.', 'success');
+                } catch (remErr) {
+                    console.error('[reminder send]', remErr);
+                    onToast?.('Pill saved, but the WhatsApp reminder failed to send. Check your contact info in Settings.', 'error', 6000);
+                }
+            } else {
+                onToast?.(editPill ? 'Pill updated.' : 'Pill saved.', 'success');
+            }
+
             changePopupState(false);
-        } catch {
-            setSaveError('Failed to save. Please try again.');
+        } catch (err) {
+            console.error('[save pill]', err);
+            setSaveError(err?.message || 'Failed to save. Please try again.');
         } finally {
             setSaving(false);
         }
@@ -415,7 +444,7 @@ function PopupChart({ changePopupState, onSave, editPill, onUpdate }) {
                                             onClick={() => toggleDay(day)}
                                             className={`rounded-full border px-3 py-1 text-[11px] font-medium transition-colors ${
                                                 selectedDays.includes(day)
-                                                    ? 'border-indigo-600 bg-indigo-600 text-white'
+                                                    ? 'border-primary bg-primary text-white'
                                                     : 'border-slate-300 bg-white text-slate-600 hover:bg-slate-50'
                                             }`}
                                         >
@@ -451,6 +480,22 @@ function PopupChart({ changePopupState, onSave, editPill, onUpdate }) {
                             </div>
                         )}
 
+                        {/* Start date — shown for every_other_day, every_x_days, every_x_months */}
+                        {needsStartDate && (
+                            <div className="md:col-span-2">
+                                <label className="block text-[11px] font-medium text-slate-700 mb-1">Starting from</label>
+                                <input
+                                    type="date"
+                                    value={startDate}
+                                    onChange={(e) => setStartDate(e.target.value)}
+                                    className="rounded border border-slate-300 bg-white px-2.5 py-1.5 text-xs focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                />
+                                <p className="mt-1 text-[11px] text-slate-400">
+                                    The schedule will follow this date as day 1.
+                                </p>
+                            </div>
+                        )}
+
                         {/* Time pickers — shown for all except as_needed */}
                         {needsTimes && (
                             <div className="md:col-span-2">
@@ -474,15 +519,31 @@ function PopupChart({ changePopupState, onSave, editPill, onUpdate }) {
                             />
                         </div>
 
-                        {/* Footer */}
-                        <div className="md:col-span-2 flex items-center justify-between pt-1">
-                            <label className="inline-flex items-center gap-1.5">
-                                <input id="enabled" type="checkbox" defaultChecked
-                                    className="h-3.5 w-3.5 rounded border-slate-300 text-primary focus:ring-primary" />
-                                <span className="text-[11px] text-body">Enable reminders</span>
+                        {/* Reminders */}
+                        <div className="md:col-span-2 rounded-lg border border-slate-200 p-3">
+                            <label className="flex items-center gap-2 cursor-pointer select-none">
+                                <input
+                                    type="checkbox"
+                                    checked={reminderEnabled}
+                                    onChange={e => setReminderEnabled(e.target.checked)}
+                                    className="h-3.5 w-3.5 rounded border-slate-300 accent-primary"
+                                />
+                                <span className="text-[11px] font-medium text-slate-700">Send SMS reminder for this pill</span>
                             </label>
+                            {reminderEnabled && (
+                                <p className="mt-1.5 text-[11px] text-slate-500 leading-relaxed">
+                                    Uses contact info from <strong>Settings → Contact Information</strong>.
+                                    {!JSON.parse(localStorage.getItem('pillpal_settings') || '{}').patientPhone && (
+                                        <span className="text-amber-500 ml-1">Contact info not set up yet.</span>
+                                    )}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Footer */}
+                        <div className="md:col-span-2 flex items-center justify-end pt-1">
                             <button type="submit" disabled={saving}
-                                className="inline-flex items-center justify-center rounded bg-primary px-3 py-1.5 text-[11px] font-medium text-purple-600 hover:bg-primary-dark disabled:opacity-50">
+                                className="inline-flex items-center justify-center rounded bg-primary px-3 py-1.5 text-[11px] font-medium text-white hover:bg-primary-dark disabled:opacity-50">
                                 {saving ? 'Saving…' : 'Save'}
                             </button>
                         </div>

@@ -42,10 +42,10 @@ const shutdown = () => {
 process.on('SIGINT', shutdown)
 process.on('SIGTERM', shutdown)
 
-const { host, port } = await ctx.serve({
+await ctx.serve({
   servedir: join(root, 'dist'),
   port: 5173,
   host: 'localhost',
 })
 
-console.log(`\n  Dev server running at http://${host}:${port}\n`)
+console.log(`\n  Dev server running at http://localhost:5173\n`)

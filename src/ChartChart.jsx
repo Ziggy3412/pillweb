@@ -71,6 +71,7 @@ function ChartChart({ pills = [], onDelete, onEdit }) {
                                     <th className="text-left font-medium px-4 py-3">Urgency</th>
                                     <th className="text-left font-medium px-4 py-3">Notes</th>
                                     <th className="px-4 py-3" />
+                                    <th className="px-4 py-3" />
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
@@ -81,15 +82,27 @@ function ChartChart({ pills = [], onDelete, onEdit }) {
                                         <td className="px-4 py-3 text-xs text-slate-700">{pill.dosage}</td>
                                         <td className="px-4 py-3 text-xs text-slate-500">{formatSchedule(pill)}</td>
                                         <td className="px-4 py-3 text-xs">
-                                            <span className="font-medium">{'★'.repeat(pill.urgency)}</span>
+                                            <span className="font-medium" style={{ color: pill.urgency >= 4 ? '#f87171' : pill.urgency === 3 ? '#facc15' : '#4ade80' }}>
+                                                {'★'.repeat(pill.urgency)}
+                                            </span>
                                         </td>
                                         <td className="px-4 py-3 text-xs text-slate-500">{pill.notes}</td>
+                                        <td className="px-4 py-3">
+                                            {pill.reminderEnabled && (
+                                                <span title="SMS reminder active" className="inline-flex items-center gap-1 rounded-full bg-primary/10 border border-primary/30 px-2 py-0.5">
+                                                    <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3 text-primary">
+                                                        <path d="M13 9.5a1 1 0 0 1-1 1H3l-2 2V2a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1z" />
+                                                    </svg>
+                                                    <span className="text-[10px] font-semibold text-primary">SMS</span>
+                                                </span>
+                                            )}
+                                        </td>
                                         <td className="px-4 py-3">
                                             <div className="flex items-center gap-2">
                                                 <button
                                                     type="button"
                                                     onClick={() => onEdit?.(pill)}
-                                                    className="text-slate-400 hover:text-indigo-500 transition-colors"
+                                                    className="text-slate-400 hover:text-blue-500 transition-colors"
                                                     aria-label="Edit"
                                                 >
                                                     <EditIcon />

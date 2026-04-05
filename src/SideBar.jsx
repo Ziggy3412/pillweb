@@ -19,7 +19,26 @@ function CirclePlusIcon({ className = 'w-5 h-5' }) {
   )
 }
 
-export default function SideBar({ currentPage = 'chart', onNavigate, onOpenAuth }) {
+function BellIcon({ className = 'w-5 h-5' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+    </svg>
+  )
+}
+
+function QuestionIcon({ className = 'w-5 h-5' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+      <line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  )
+}
+
+export default function SideBar({ currentPage = 'chart', onNavigate, onOpenAuth, onOpenSettings }) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const { user, logout } = useAuth()
   const initials = user?.displayName
@@ -80,7 +99,22 @@ export default function SideBar({ currentPage = 'chart', onNavigate, onOpenAuth 
           <span className="shrink-0 text-slate-600">
             <CirclePlusIcon />
           </span>
-          {!isCollapsed && <span className="truncate">Pill Chart</span>}
+          {!isCollapsed && <span className="truncate">Medication chart</span>}
+        </button>
+        <button
+          title="FAQ"
+          type="button"
+          onClick={() => onNavigate?.('faq')}
+          className={`flex items-center gap-3 rounded-lg px-3 py-2 text-left focus:outline-none focus:ring-2 focus:ring-primary border ${
+            currentPage === 'faq'
+              ? 'border-slate-200 bg-slate-100 text-primary-dark'
+              : 'border-transparent text-slate-700 hover:border-slate-200 hover:bg-slate-100'
+          }`}
+        >
+          <span className="shrink-0 text-slate-600">
+            <QuestionIcon />
+          </span>
+          {!isCollapsed && <span className="truncate">FAQ</span>}
         </button>
       </nav>
 
@@ -100,6 +134,17 @@ export default function SideBar({ currentPage = 'chart', onNavigate, onOpenAuth 
                   <p className="truncate text-xs font-semibold text-slate-800">{user.displayName}</p>
                   <p className="truncate text-[11px] text-slate-400">{user.email}</p>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => onOpenSettings?.()}
+                  title="Settings"
+                  className="shrink-0 rounded p-1.5 text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors"
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <circle cx="12" cy="12" r="3" />
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                  </svg>
+                </button>
                 <button
                   type="button"
                   onClick={logout}
