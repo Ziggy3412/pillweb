@@ -245,6 +245,16 @@ export default function OnboardingModal({ onFinish }) {
                 Next →
               </button>
             </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                localStorage.setItem('pillpal_whatsapp_skipped', 'true')
+                next()
+              }}
+              className="w-full mt-3 text-xs text-slate-400 hover:text-slate-600 transition-colors py-1">
+              Skip for now — I'll set this up later
+            </button>
           </div>
         )}
 
