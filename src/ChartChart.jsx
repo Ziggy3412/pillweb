@@ -89,11 +89,11 @@ function ChartChart({ pills = [], onDelete, onEdit }) {
                                         <td className="px-4 py-3 text-xs text-slate-500">{pill.notes}</td>
                                         <td className="px-4 py-3">
                                             {pill.reminderEnabled && (
-                                                <span title="SMS reminder active" className="inline-flex items-center gap-1 rounded-full bg-primary/10 border border-primary/30 px-2 py-0.5">
+                                                <span title="WhatsApp reminder active" className="inline-flex items-center gap-1 rounded-full bg-primary/10 border border-primary/30 px-2 py-0.5">
                                                     <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3 text-primary">
                                                         <path d="M13 9.5a1 1 0 0 1-1 1H3l-2 2V2a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1z" />
                                                     </svg>
-                                                    <span className="text-[10px] font-semibold text-primary">SMS</span>
+                                                    <span className="text-[10px] font-semibold text-primary">WhatsApp</span>
                                                 </span>
                                             )}
                                         </td>

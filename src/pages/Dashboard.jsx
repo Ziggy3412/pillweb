@@ -13,7 +13,7 @@ const HOW_STEPS = [
   },
   {
     label: 'Automated Reminders',
-    description: 'Send automated, timely SMS reminders to the medication taker hands free.',
+    description: 'Send automated, timely WhatsApp reminders to the medication taker hands free.',
     icon: '🔔',
   },
   {
@@ -26,7 +26,7 @@ const HOW_STEPS = [
 const WHY_ITEMS = [
   {
     title: 'Simple',
-    description: 'The medication taker receives SMS reminders with no setup required on their part.',
+    description: 'The medication taker receives WhatsApp reminders with no setup required on their part.',
   },
   {
     title: 'Remote',
@@ -34,7 +34,7 @@ const WHY_ITEMS = [
   },
   {
     title: 'Reliable',
-    description: 'Receive confirmation or alert text messages when the medication taker successfully takes (or misses) a dose.',
+    description: 'Receive confirmation or alert WhatsApp messages when the medication taker successfully takes (or misses) a dose.',
   },
 ];
 

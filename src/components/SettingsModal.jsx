@@ -158,7 +158,7 @@ export default function SettingsModal({ onClose }) {
             {section === 'contact' && !showConfirm && (
               <div className="flex flex-col gap-4">
                 <p className="text-[11px] text-slate-500">
-                  Used when sending SMS reminders from the pill chart.
+                  Used when sending WhatsApp reminders from the pill chart.
                 </p>
 
                 {/* Caregivers */}

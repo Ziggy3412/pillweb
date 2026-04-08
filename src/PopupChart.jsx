@@ -216,7 +216,10 @@ function initTimeState(pill) {
 
 function PopupChart({ changePopupState, onSave, editPill, onUpdate, onToast }) {
     // Controlled text fields — pre-filled when editing
-    const [name, setName] = useState(editPill?.name ?? '');
+    const defaultName = editPill?.name ?? (() => {
+        try { return JSON.parse(localStorage.getItem('pillpal_settings') || '{}').patientName || ''; } catch { return ''; }
+    })();
+    const [name, setName] = useState(defaultName);
     const [medication, setMedication] = useState(editPill?.medication ?? '');
     const [dosage, setDosage] = useState(editPill?.dosage ?? '');
     const [notes, setNotes] = useState(editPill?.notes ?? '');
@@ -528,7 +531,7 @@ function PopupChart({ changePopupState, onSave, editPill, onUpdate, onToast }) {
                                     onChange={e => setReminderEnabled(e.target.checked)}
                                     className="h-3.5 w-3.5 rounded border-slate-300 accent-primary"
                                 />
-                                <span className="text-[11px] font-medium text-slate-700">Send SMS reminder for this pill</span>
+                                <span className="text-[11px] font-medium text-slate-700">Send WhatsApp reminder for this pill</span>
                             </label>
                             {reminderEnabled && (
                                 <p className="mt-1.5 text-[11px] text-slate-500 leading-relaxed">
